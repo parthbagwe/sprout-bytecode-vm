@@ -17,3 +17,5 @@ sprout = "sprout.cli:main"
 [tool.setuptools.packages.find]
 include = ["sprout*"]
 
+[tool.setuptools.package-data]
+sprout = ["web/*"]

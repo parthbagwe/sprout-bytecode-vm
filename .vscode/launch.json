@@ -16,7 +16,14 @@
       "module": "sprout",
       "args": ["run", "examples/fibonacci.sprout", "--trace"],
       "console": "integratedTerminal"
+    },
+    {
+      "name": "Start web playground",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "sprout",
+      "args": ["web", "--port", "8000"],
+      "console": "integratedTerminal"
     }
   ]
 }
-

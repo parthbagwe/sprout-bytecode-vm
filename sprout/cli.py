@@ -30,6 +30,10 @@ def build_parser() -> argparse.ArgumentParser:
     dis = subparsers.add_parser("dis", help="Disassemble a .sprout or .sbc file.")
     dis.add_argument("file", type=Path)
 
+    web = subparsers.add_parser("web", help="Run the browser playground on localhost.")
+    web.add_argument("--host", default="127.0.0.1", help="Address to bind (default: 127.0.0.1).")
+    web.add_argument("--port", type=int, default=8000, help="Port to bind (default: 8000).")
+
     subparsers.add_parser("repl", help="Start an interactive Sprout prompt.")
     return parser
 
@@ -51,6 +55,10 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "dis":
             function = read_bytecode(args.file) if args.file.suffix == ".sbc" else _compile_file(args.file)
             print(disassemble(function))
+        elif args.command == "web":
+            from .web_server import serve
+
+            serve(args.host, args.port)
         elif args.command == "repl" or args.command is None:
             _repl()
         else:
@@ -86,4 +94,3 @@ def _repl() -> None:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

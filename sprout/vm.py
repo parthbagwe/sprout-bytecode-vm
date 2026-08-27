@@ -16,9 +16,18 @@ class VM:
     STACK_MAX = 65_536
     FRAMES_MAX = 256
 
-    def __init__(self, output: Callable[[str], None] = print, trace: bool = False):
+    def __init__(
+        self,
+        output: Callable[[str], None] = print,
+        trace: bool = False,
+        trace_output: Callable[[str], None] | None = None,
+        instruction_limit: int | None = None,
+    ):
         self.output = output
         self.trace = trace
+        self.trace_output = trace_output or output
+        self.instruction_limit = instruction_limit
+        self.instructions_executed = 0
         self.stack: list[object] = []
         self.frames: list[CallFrame] = []
         self.globals: dict[str, object] = {}
@@ -26,6 +35,7 @@ class VM:
     def interpret(self, function: FunctionObject):
         self.stack.clear()
         self.frames.clear()
+        self.instructions_executed = 0
         self.stack.append(function)
         self._call(function, 0)
         return self._run()
@@ -37,6 +47,12 @@ class VM:
                 self._runtime_error("Instruction pointer escaped the bytecode chunk.", None)
             instruction = frame.function.chunk.code[frame.ip]
             frame.ip += 1
+            self.instructions_executed += 1
+            if self.instruction_limit is not None and self.instructions_executed > self.instruction_limit:
+                self._runtime_error(
+                    f"Instruction limit of {self.instruction_limit:,} exceeded. Check for an infinite loop.",
+                    instruction,
+                )
             if self.trace:
                 self._trace(frame, instruction)
             op = instruction.op
@@ -190,8 +206,8 @@ class VM:
     def _trace(self, frame: CallFrame, instruction: Instruction) -> None:
         stack = " ".join(f"[{self.stringify(value)}]" for value in self.stack)
         arg = "" if instruction.arg is None else f" {instruction.arg}"
-        self.output(f"          {stack}")
-        self.output(f"{frame.ip - 1:04d} L{instruction.line:<3} {instruction.op.name}{arg}")
+        self.trace_output(f"          {stack}")
+        self.trace_output(f"{frame.ip - 1:04d} L{instruction.line:<3} {instruction.op.name}{arg}")
 
     def _runtime_error(self, message: str, instruction: Instruction | None) -> None:
         trace: list[str] = []
@@ -205,4 +221,3 @@ class VM:
             trace.append(f"  [line {line}] in {frame.function.name}()")
         details = "\n".join(trace)
         raise VMError(f"{message}\n{details}" if details else message)
-

@@ -6,6 +6,7 @@ from sprout.bytecode import MAGIC, disassemble, read_bytecode, write_bytecode
 from sprout.compiler import compile_source
 from sprout.errors import CompileError, VMError
 from sprout.vm import VM
+from sprout.web_server import run_playground
 
 
 def run(source: str) -> list[str]:
@@ -77,6 +78,24 @@ class SproutTests(unittest.TestCase):
     def test_runtime_error_has_source_trace(self):
         with self.assertRaisesRegex(VMError, r"(?s)Division by zero.*line 1"):
             run("print 1 / 0;")
+
+    def test_playground_returns_output_bytecode_and_stats(self):
+        result = run_playground("fn twice(x) { return x * 2; } print twice(6);", trace=True)
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["output"], "12")
+        self.assertIn("CALL", result["bytecode"])
+        self.assertIn("MULTIPLY", result["trace"])
+        self.assertGreater(result["stats"]["executedInstructions"], 0)
+
+    def test_playground_stops_infinite_loop(self):
+        result = run_playground("while true {}", instruction_limit=50)
+        self.assertFalse(result["ok"])
+        self.assertIn("Instruction limit", result["error"])
+
+    def test_playground_caps_large_trace(self):
+        result = run_playground("let i = 0; while i < 1000 { i = i + 1; }", trace=True)
+        self.assertTrue(result["ok"])
+        self.assertIn("trace truncated", result["trace"])
 
 
 if __name__ == "__main__":
