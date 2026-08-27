@@ -1,0 +1,17 @@
+// Recursion, local variables, control flow, and string output.
+fn fib(n) {
+  if n < 2 {
+    return n;
+  }
+  return fib(n - 1) + fib(n - 2);
+}
+
+let limit = 10;
+let i = 0;
+
+print "Sprout Fibonacci sequence:";
+while i < limit {
+  print fib(i);
+  i = i + 1;
+}
+

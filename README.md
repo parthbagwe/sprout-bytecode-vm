@@ -1,0 +1,116 @@
+# Sprout Bytecode VM
+
+Sprout is a small programming language with a complete implementation pipeline:
+
+```text
+source -> lexer -> parser -> AST -> compiler -> .sbc bytecode -> stack VM
+```
+
+It is intentionally compact, but uses techniques found in real runtimes: lexical scopes, precedence parsing, a constant pool, jump patching, short-circuit logic, function call frames, recursion, binary bytecode serialization, a disassembler, stack traces, and instruction tracing.
+
+## Language tour
+
+```sprout
+fn fib(n) {
+  if n < 2 {
+    return n;
+  }
+  return fib(n - 1) + fib(n - 2);
+}
+
+let i = 0;
+while i < 10 {
+  print fib(i);
+  i = i + 1;
+}
+```
+
+Sprout supports numbers, strings, booleans, `null`, variables, block scopes, arithmetic, comparisons, `and`/`or`, `if`/`else`, `while`, functions, recursion, `return`, and `print`.
+
+## Run it
+
+Sprout requires Python 3.11 or newer and has no third-party dependencies.
+
+```powershell
+python -m sprout run examples/fibonacci.sprout
+```
+
+Compile source into Sprout's binary bytecode format and execute it separately:
+
+```powershell
+python -m sprout compile examples/fibonacci.sprout -o fibonacci.sbc
+python -m sprout exec fibonacci.sbc
+```
+
+Inspect the generated instructions:
+
+```powershell
+python -m sprout dis examples/fibonacci.sprout
+```
+
+Trace the operand stack and every executed opcode:
+
+```powershell
+python -m sprout run examples/features.sprout --trace
+```
+
+Start the REPL:
+
+```powershell
+python -m sprout repl
+```
+
+## Bytecode format
+
+`.sbc` files begin with the eight-byte magic header `SPROUTBC`, followed by a format version and a recursively encoded top-level function. Every function stores its arity, constant pool, instruction stream, operands, and source-line table.
+
+The instruction set includes:
+
+```text
+CONSTANT  NULL  TRUE  FALSE
+POP       GET_LOCAL  SET_LOCAL
+GET_GLOBAL  DEFINE_GLOBAL  SET_GLOBAL
+EQUAL  GREATER  LESS
+ADD  SUBTRACT  MULTIPLY  DIVIDE  NOT  NEGATE
+JUMP  JUMP_IF_FALSE  LOOP
+CALL  RETURN  PRINT
+```
+
+The VM uses one value stack plus lightweight call frames. Each frame records a function, instruction pointer, and the stack slot where its locals begin. This lets parameters and local variables live directly on the operand stack.
+
+## Project map
+
+```text
+sprout/
+  lexer.py       source -> tokens
+  parser.py      tokens -> syntax tree
+  ast.py         expression and statement nodes
+  compiler.py    syntax tree -> bytecode
+  bytecode.py    opcodes, binary codec, disassembler
+  vm.py          stack machine and call frames
+  cli.py         run, compile, exec, disassemble, REPL
+examples/
+tests/
+```
+
+## Tests
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+The suite covers precedence, strings, scopes, loops, assignment, recursive functions, short-circuit evaluation, runtime stack traces, disassembly, and binary bytecode round-tripping.
+
+## Ideas for the next version
+
+- Closures and captured upvalues
+- Arrays and indexing opcodes
+- A mark-and-sweep heap for runtime objects
+- Constant folding and dead-code elimination
+- Source-level debugger with breakpoints
+- A bytecode verifier and benchmark suite
+
+## License
+
+MIT
+

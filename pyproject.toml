@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sprout-bytecode-vm"
+version = "0.1.0"
+description = "A tiny language compiled to custom bytecode and executed by a stack VM"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Parth Bagwe" }]
+
+[project.scripts]
+sprout = "sprout.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["sprout*"]
+

@@ -1,0 +1,14 @@
+fn classify(value) {
+  if value < 0 {
+    return "negative";
+  } else if value == 0 {
+    return "zero";
+  } else {
+    return "positive";
+  }
+}
+
+let message = "Sprout says: " + classify(42);
+print message;
+print (true and false) or true;
+

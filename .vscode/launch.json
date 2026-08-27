@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Fibonacci example",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "sprout",
+      "args": ["run", "examples/fibonacci.sprout"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Trace Fibonacci bytecode",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "sprout",
+      "args": ["run", "examples/fibonacci.sprout", "--trace"],
+      "console": "integratedTerminal"
+    }
+  ]
+}
+
